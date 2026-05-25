@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Eval / run artifacts
+eval_results/
+experiments/logs/
+logs/
+saved_attention/
+saved_attentions/
+plots/
+wandb/
+*.log
+*.err
+
+# Checkpoints / caches (set PRETRAINED_CHECKPOINT / CACHE_ROOT externally)
+.cache/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+
+# IDE / env
+.env
+.venv/
+venv/
+.idea/
+.vscode/
+.cursor/
+
+# OS
+.DS_Store
+Thumbs.db

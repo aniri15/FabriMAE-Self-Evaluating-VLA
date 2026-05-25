@@ -1,0 +1,23 @@
+bddl_files_path: "../third_party/LIBERO_PRO/libero/libero/bddl_files"
+script_path: "../third_party/LIBERO_PRO/notebooks/generate_init_states.py"
+init_file_dir: "../third_party/LIBERO_PRO/libero/libero/init_files/"
+
+use_environment: false
+use_swap: false
+use_object: false
+use_language: false
+use_task: false
+
+ood_task_configs:
+  environment: "../third_party/LIBERO_PRO/libero_ood/ood_environment.yaml"
+  swap: "../third_party/LIBERO_PRO/libero_ood/ood_spatial_relation.yaml"
+  object: "../third_party/LIBERO_PRO/libero_ood/ood_object.yaml"
+  language: "../third_party/LIBERO_PRO/libero_ood/ood_language.yaml"
+  task: "../third_party/LIBERO_PRO/libero_ood/ood_task.yaml"
+
+perturbation_mapping:
+  use_environment: env
+  use_swap: swap
+  use_object: object
+  use_language: lan
+  use_task: task
