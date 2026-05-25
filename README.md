@@ -2,8 +2,6 @@
 
 LIBERO / LIBERO-PRO self-evaluation for three VLA baselines, with shared benchmarks in `third_party/` (`LIBERO`, `LIBERO_PRO`). Launch scripts source `third_party/libero_env.sh` to switch `libero` / `libero_pro` without mixing configs.
 
-**Repository:** [github.com/aniri15/MAE_Self_Evaluation_Framework_for_VLA](https://github.com/aniri15/MAE_Self_Evaluation_Framework_for_VLA)
-
 ## Layout
 
 ```
@@ -33,7 +31,7 @@ User-facing metric names: **MAE-D** (top-k visual entropy; internal compute: `ma
 ## Prerequisites
 
 ```bash
-git clone git@github.com:aniri15/MAE_Self_Evaluation_Framework_for_VLA.git
+git clone <REPO_URL>
 cd MAE_Self_Evaluation_Framework_for_VLA
 
 export REPO_ROOT="$(pwd)"
