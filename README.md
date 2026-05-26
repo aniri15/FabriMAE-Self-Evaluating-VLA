@@ -145,3 +145,15 @@ bash openvla/openvla_run_libero_self_eval.sh libero_reflect libero_spatial mae-d
 bash openvla_oft/openvla_oft_run_libero_self_eval.sh libero libero_spatial mae-d
 # PI: starVLA/examples/LIBERO/eval_files/run_policy_server.sh + eval_libero.py (--attention-eval-method mae-c)
 ```
+
+---
+
+## Related Work
+
+This framework builds on the following open-source projects:
+
+- [LIBERO](https://github.com/Lifelong-Robot-Learning/LIBERO) — lifelong robot learning benchmark
+- [LIBERO-PRO](https://github.com/Zxy-MLlab/LIBERO-PRO) — LIBERO evaluation extension with OOD perturbations
+- [OpenVLA](https://github.com/openvla/openvla) — vision-language-action policy
+- [OpenVLA-OFT](https://github.com/moojink/openvla-oft) — fine-tuned OpenVLA with optimized inference
+- [starVLA](https://github.com/starVLA/starVLA) — PI (Policy Interface) VLA baseline
