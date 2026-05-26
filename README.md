@@ -1,18 +1,20 @@
 # MAE Self-Evaluation Framework for VLA
 
-LIBERO / LIBERO-PRO self-evaluation for three VLA baselines, with shared benchmarks in `third_party/` (`LIBERO`, `LIBERO_PRO`). Launch scripts source `third_party/libero_env.sh` to switch `libero` / `libero_pro` without mixing configs.
+LIBERO / LIBERO-REFLECT self-evaluation for three VLA baselines. Benchmark trees live in a **separate git repo** ([LIBERO-REFLECT](https://github.com/)) and are wired in via `third_party/LIBERO-REFLECT`. Launch scripts source `third_party/libero_env.sh` to switch `libero` / `libero_reflect`.
 
 ## Layout
 
 ```
 .
-├── third_party/LIBERO, LIBERO_PRO, libero_env.sh
-├── openvla/          # discrete OpenVLA-7B
-├── openvla_oft/      # OpenVLA-OFT
-└── starVLA/          # Qwen3-VL-PI
+├── third_party/libero_env.sh, setup_libero_reflect.sh   # link external LIBERO-REFLECT checkout
+├── openvla/
+├── openvla_oft/
+└── starVLA/
 ```
 
-Symlinks: `openvla/.../LIBERO_PRO` and `openvla_oft/.../LIBERO_PRO` → `third_party/LIBERO_PRO`; `openvla_oft/LIBERO` → `third_party/LIBERO`.
+Benchmark data (separate repo, not in this git tree): LIBERO-REFLECT (`standard/` + `reflect/`).
+
+Model convenience symlinks: `openvla/.../LIBERO_PRO`, `openvla_oft/LIBERO`, `openvla_oft/.../LIBERO_PRO` → `third_party/LIBERO-REFLECT/*`.
 
 ## Self-eval modes (MAE-D / MAE-C)
 
@@ -35,6 +37,9 @@ git clone <REPO_URL>
 cd MAE_Self_Evaluation_Framework_for_VLA
 
 export REPO_ROOT="$(pwd)"
+git clone <LIBERO-REFLECT_REPO_URL> ../LIBERO-REFLECT   # or set LIBERO_REFLECT_ROOT
+bash third_party/setup_libero_reflect.sh
+
 export PRETRAINED_CHECKPOINT=/path/to/checkpoint
 export CACHE_ROOT=/path/to/.cache          # optional
 export CONDA_ENV=<env>                     # see table below
@@ -68,7 +73,7 @@ bash openvla_run_libero_self_eval.sh libero libero_spatial output_stats
 bash openvla_run_libero_self_eval.sh libero libero_spatial mae-d
 ```
 
-Output: `eval_results/<libero|libero_pro>/<ckpt>/<suite>/<date>/<run>/` — `self_eval_{consistency|output_stats}_scores.json` or `online_MAE-D_scores.jsonl`.
+Output: `eval_results/<libero|libero_reflect>/<ckpt>/<suite>/<date>/<run>/` — `self_eval_{consistency|output_stats}_scores.json` or `online_MAE-D_scores.jsonl`.
 
 ---
 
@@ -122,9 +127,9 @@ Outputs: `online_MAE-C_scores.jsonl`, `online_action_consistency_scores.jsonl`; 
 
 ---
 
-## LIBERO-PRO perturbations
+## LIBERO-REFLECT perturbations
 
-Configs: `third_party/LIBERO_PRO/evaluation_config_swap.yaml` and `generated_configs/eval_config_<suite>_<pert>.yaml` (`env`, `swap`, `object`, `lang`, `task`).
+Configs: `third_party/LIBERO-REFLECT/model_configs/evaluation_config_swap.yaml` and `reflect/generated_configs/eval_config_<suite>_<pert>.yaml` (`env`, `swap`, `object`, `lang`, `task`).
 
 Override: `export EVALUATION_CONFIG_PATH=...`
 
@@ -136,6 +141,7 @@ From the repository root:
 
 ```bash
 bash openvla/openvla_run_libero_self_eval.sh libero libero_spatial output_stats
+bash openvla/openvla_run_libero_self_eval.sh libero_reflect libero_spatial mae-d
 bash openvla_oft/openvla_oft_run_libero_self_eval.sh libero libero_spatial mae-d
 # PI: starVLA/examples/LIBERO/eval_files/run_policy_server.sh + eval_libero.py (--attention-eval-method mae-c)
 ```

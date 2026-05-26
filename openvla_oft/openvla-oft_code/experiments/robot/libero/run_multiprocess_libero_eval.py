@@ -164,7 +164,7 @@ class GenerateConfig:
     attention_eval_method: str = "mae-d"             # mae-d only (MAE-C is PI-only)
     attention_eval_ratios: str = "0.01"              # Comma-separated top-k ratios for online MAE-D
     attention_eval_output_name: str = DEFAULT_MAE_D_OUTPUT
-    libero_benchmark: str = "libero"                 # libero | libero_pro
+    libero_benchmark: str = "libero"                 # libero | libero_reflect
 
     seed: int = 7                                    # Random Seed (for reproducibility)
 
@@ -1537,7 +1537,7 @@ def eval_libero(cfg: GenerateConfig) -> float:
     validate_config(cfg)
     configure_self_eval(cfg)
 
-    if getattr(cfg, "libero_benchmark", "libero") == "libero_pro":
+    if getattr(cfg, "libero_benchmark", "libero") in ("libero_reflect", "libero_pro"):
         from experiments.robot.libero.repo_paths import libero_pro_libero_root
 
         setup_libero_config(libero_pro_libero_root())

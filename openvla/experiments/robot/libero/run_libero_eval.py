@@ -83,7 +83,7 @@ class GenerateConfig:
     # LIBERO environment-specific parameters
     #################################################################################################################
     task_suite_name: str = "libero_spatial"          # Task suite. Options: libero_spatial, libero_object, libero_goal, libero_10, libero_90
-    libero_benchmark: str = "libero"                 # libero | libero_pro
+    libero_benchmark: str = "libero"                 # libero | libero_reflect (alias: libero_pro)
     num_steps_wait: int = 10                         # Number of steps to wait for objects to stabilize in sim
     num_trials_per_task: int = 50                    # Number of rollouts per task
     max_parallel_tasks: int = 2                      # Number of LIBERO tasks to evaluate concurrently (deprecated: now always sequential)
@@ -432,10 +432,10 @@ def eval_libero(cfg: GenerateConfig) -> None:
 
     # [OpenVLA] Set action un-normalization key
     cfg.unnorm_key = cfg.task_suite_name
-    if cfg.libero_benchmark == "libero_pro":
+    if cfg.libero_benchmark in ("libero_pro", "libero_reflect"):
         raise ValueError(
-            "libero_benchmark=libero_pro requires run_libero_pro_eval.py. "
-            "Use openvla_oft_run_libero_self_eval.sh with LIBERO_BENCHMARK=libero_pro."
+            "libero_benchmark=libero_reflect requires run_libero_pro_eval.py. "
+            "Use openvla_run_libero_self_eval.sh with LIBERO_BENCHMARK=libero_reflect."
         )
     configure_self_eval(cfg)
     if cfg.action_sampling_temperature > 0:

@@ -8,7 +8,7 @@
 #SBATCH --partition=a100
 
 # Usage:
-#   bash openvla_oft_run_libero_self_eval.sh [libero|libero_pro] [task_suite] [consistency|mae-d]
+#   bash openvla_oft_run_libero_self_eval.sh [libero|libero_reflect] [task_suite] [consistency|mae-d]
 # MAE-D online: SELF_EVAL_MODE=mae-d (writes online_MAE-D_scores.jsonl; no attention .pt save)
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -30,11 +30,14 @@ ACTION_NOISE_STD="${ACTION_NOISE_STD:-0.01}"
 SAVE_ATTENTIONS="${SAVE_ATTENTIONS:-False}"
 
 OFT_CHECKPOINT="${PRETRAINED_CHECKPOINT:-${CACHE_BASE_DIR}/hub/models--moojink--openvla-7b-oft-finetuned-libero-spatial-object-goal-10/snapshots/638918f3d1c2e43a39a8a20772bdb8b91835e4b7}"
-LIBERO_PRO_EVAL_CONFIG="${EVALUATION_CONFIG_PATH:-${MAIN_ROOT}/third_party/LIBERO_PRO/evaluation_config_swap.yaml}"
+LIBERO_PRO_EVAL_CONFIG="${EVALUATION_CONFIG_PATH:-${MAIN_ROOT}/third_party/LIBERO-REFLECT/model_configs/evaluation_config_swap.yaml}"
 
-if [[ "$LIBERO_BENCHMARK" != "libero" && "$LIBERO_BENCHMARK" != "libero_pro" ]]; then
-    echo "Unsupported LIBERO_BENCHMARK=$LIBERO_BENCHMARK"
+if [[ "$LIBERO_BENCHMARK" != "libero" && "$LIBERO_BENCHMARK" != "libero_reflect" && "$LIBERO_BENCHMARK" != "libero_pro" ]]; then
+    echo "Unsupported LIBERO_BENCHMARK=$LIBERO_BENCHMARK (expected: libero | libero_reflect)"
     exit 1
+fi
+if [[ "$LIBERO_BENCHMARK" == "libero_pro" ]]; then
+    LIBERO_BENCHMARK="libero_reflect"
 fi
 
 case "${TASK_SUITE_NAME}" in
@@ -112,7 +115,7 @@ COMMON_ARGS=(
   --use_proprio True
 )
 
-if [[ "$LIBERO_BENCHMARK" == "libero_pro" ]]; then
+if [[ "$LIBERO_BENCHMARK" == "libero_reflect" ]]; then
     python ./openvla-oft_code/experiments/robot/libero/run_multiprocess_libero_pro_eval.py \
       "${COMMON_ARGS[@]}" \
       --evaluation_config_path "$LIBERO_PRO_EVAL_CONFIG"

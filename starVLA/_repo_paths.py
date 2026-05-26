@@ -21,17 +21,29 @@ def main_root() -> Path:
 
 
 def libero_home() -> Path:
-    return Path(os.environ.get("LIBERO_HOME", str(_MAIN_ROOT / "third_party" / "LIBERO")))
+    return Path(
+        os.environ.get("LIBERO_HOME", str(_MAIN_ROOT / "third_party" / "LIBERO-REFLECT" / "standard"))
+    ).expanduser().resolve()
 
 
 def libero_pro_home() -> Path:
-    return Path(os.environ.get("LIBERO_PRO_HOME", str(_MAIN_ROOT / "third_party" / "LIBERO_PRO")))
+    return Path(
+        os.environ.get(
+            "LIBERO_PRO_HOME",
+            str(_MAIN_ROOT / "third_party" / "LIBERO-REFLECT" / "reflect"),
+        )
+    ).expanduser().resolve()
 
 
 def libero_pro_eval_config() -> Path:
     env_path = os.environ.get("LIBERO_PRO_EVAL_CONFIG", "").strip()
     if env_path:
         return Path(env_path)
+    framework_cfg = (
+        _MAIN_ROOT / "third_party" / "LIBERO-REFLECT" / "model_configs" / "evaluation_config_swap.yaml"
+    )
+    if framework_cfg.is_file():
+        return framework_cfg
     return libero_pro_home() / "evaluation_config_swap.yaml"
 
 

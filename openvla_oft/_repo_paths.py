@@ -26,11 +26,15 @@ def oft_code_root() -> Path:
 
 
 def libero_path() -> Path:
-    return Path(os.environ.get("LIBERO_PATH", str(_MAIN_ROOT / "third_party" / "LIBERO")))
+    return Path(
+        os.environ.get("LIBERO_PATH", str(_MAIN_ROOT / "third_party" / "LIBERO-REFLECT" / "standard"))
+    ).expanduser().resolve()
 
 
 def libero_pro_root() -> Path:
-    return Path(os.environ.get("LIBERO_PRO_PATH", str(_MAIN_ROOT / "third_party" / "LIBERO_PRO")))
+    return Path(
+        os.environ.get("LIBERO_PRO_PATH", str(_MAIN_ROOT / "third_party" / "LIBERO-REFLECT" / "reflect"))
+    ).expanduser().resolve()
 
 
 def libero_pro_libero_root() -> Path:

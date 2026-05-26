@@ -51,7 +51,13 @@ LIBERO_ENV = os.environ.get("LIBERO_ENV", "libero_pro")
 
 STARVLA_CODE_ROOT = _SCRIPT_DIR
 LIBERO_ROOT = _MAIN_ROOT / "third_party" / "LIBERO"
-LIBERO_PRO_DIR = Path(os.environ.get("LIBERO_PRO_DIR", str(_MAIN_ROOT / "third_party" / "LIBERO_PRO")))
+LIBERO_PRO_DIR = Path(
+    os.environ.get(
+        "LIBERO_PRO_DIR",
+        str(_MAIN_ROOT / "third_party" / "LIBERO-REFLECT" / "reflect"),
+    )
+).expanduser().resolve()
+LIBERO_REFLECT_DIR = LIBERO_PRO_DIR
 
 # Perturbation Mappings (Short name -> Config Key)
 PERTURBATION_MAP = {

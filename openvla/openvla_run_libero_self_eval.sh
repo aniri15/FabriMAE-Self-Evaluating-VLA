@@ -8,7 +8,7 @@
 #SBATCH --partition=a100
 
 # Usage:
-#   bash openvla_run_libero_self_eval.sh [libero|libero_pro] [task_suite] [consistency|output_stats|mae-d]
+#   bash openvla_run_libero_self_eval.sh [libero|libero_reflect] [task_suite] [consistency|output_stats|mae-d]
 # MAE-D online: SELF_EVAL_MODE=mae-d (writes online_MAE-D_scores.jsonl; no attention .pt save)
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -24,9 +24,12 @@ CONSISTENCY_REPEATS="${CONSISTENCY_REPEATS:-3}"
 CONSISTENCY_METHOD="${CONSISTENCY_METHOD:-token_sample}"
 SAVE_ATTENTIONS="${SAVE_ATTENTIONS:-False}"
 
-if [[ "$LIBERO_BENCHMARK" != "libero" && "$LIBERO_BENCHMARK" != "libero_pro" ]]; then
-    echo "Unsupported LIBERO_BENCHMARK=$LIBERO_BENCHMARK (expected: libero | libero_pro)"
+if [[ "$LIBERO_BENCHMARK" != "libero" && "$LIBERO_BENCHMARK" != "libero_reflect" && "$LIBERO_BENCHMARK" != "libero_pro" ]]; then
+    echo "Unsupported LIBERO_BENCHMARK=$LIBERO_BENCHMARK (expected: libero | libero_reflect)"
     exit 1
+fi
+if [[ "$LIBERO_BENCHMARK" == "libero_pro" ]]; then
+    LIBERO_BENCHMARK="libero_reflect"
 fi
 
 if [[ "$SELF_EVAL_MODE" != "consistency" && "$SELF_EVAL_MODE" != "output_stats" && "$SELF_EVAL_MODE" != "mae-d" && "$SELF_EVAL_MODE" != "mad" ]]; then
@@ -63,7 +66,7 @@ if [[ -z "$PRETRAINED_CHECKPOINT" ]]; then
     PRETRAINED_CHECKPOINT="${HF_HUB}/models--openvla--openvla-7b-finetuned-libero-spatial/snapshots/fa5ae1e7509348889295bba8e08621d8b55e9baf"
 fi
 
-LIBERO_PRO_EVAL_CONFIG="${EVALUATION_CONFIG_PATH:-${MAIN_ROOT}/third_party/LIBERO_PRO/evaluation_config_swap.yaml}"
+LIBERO_PRO_EVAL_CONFIG="${EVALUATION_CONFIG_PATH:-${MAIN_ROOT}/third_party/LIBERO-REFLECT/model_configs/evaluation_config_swap.yaml}"
 
 if [[ -z "${SLURM_JOB_ID:-}" ]]; then
     DATE_STAMP="${DATE_STAMP:-$(date +%Y%m%d)}"
@@ -123,7 +126,7 @@ COMMON_ARGS=(
   --local_log_dir "$LOCAL_LOG_DIR"
 )
 
-if [[ "$LIBERO_BENCHMARK" == "libero_pro" ]]; then
+if [[ "$LIBERO_BENCHMARK" == "libero_reflect" ]]; then
     python ./experiments/robot/libero/run_libero_pro_eval.py \
       "${COMMON_ARGS[@]}" \
       --evaluation_config_path "$LIBERO_PRO_EVAL_CONFIG"
