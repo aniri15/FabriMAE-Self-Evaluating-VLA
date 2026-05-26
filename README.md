@@ -129,7 +129,7 @@ Outputs: `online_MAE-C_scores.jsonl`, `online_action_consistency_scores.jsonl`; 
 
 ## LIBERO-REFLECT perturbations
 
-Configs: `third_party/LIBERO-REFLECT/model_configs/evaluation_config_swap.yaml` and `reflect/generated_configs/eval_config_<suite>_<pert>.yaml` (`env`, `swap`, `object`, `lang`, `task`).
+Configs: `third_party/LIBERO-REFLECT/model_configs/evaluation_config_swap.yaml` and `reflect/generated_configs/eval_config_<suite>_<pert>.yaml` (`swap`).
 
 Override: `export EVALUATION_CONFIG_PATH=...`
 
