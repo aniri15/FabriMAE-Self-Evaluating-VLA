@@ -2,15 +2,6 @@
 
 This repository implements Markov Attention Entropy (MAE), a white-box self-evaluation framework across heterogeneous VLAs, and evaluates it on LIBERO-Reflect. Benchmark assets are kept in a separate checkout and linked through `third_party/LIBERO-REFLECT`. Evaluation scripts use `third_party/libero_env.sh` to switch between standard (`libero`) and perturbed (`libero_reflect`) rollouts.
 
-## Paper Results at a Glance
-
-Primary self-evaluation results on the four LIBERO-Reflect subsets are shown below. Each cell reports `AUROC / AUPR / FPR@95` in percent, using the paper-reported all-layer, `Top-1` oriented-entropy configuration. AUROC and AUPR are higher-is-better; FPR@95 is lower-is-better. Bold values are best among the three evaluated policies for the corresponding metric and subset.
-
-| Policy | MAE Score | Reflect-Goal | Reflect-Object | Reflect-Spatial | Reflect-10 |
-| --- | --- | --- | --- | --- | --- |
-| OpenVLA | MAE-D (`Top-1`) | 63.94 / 43.23 / 61.92 | **90.97** / 75.88 / **28.30** | 66.86 / 50.74 / 75.79 | 54.74 / 27.45 / 86.46 |
-| OpenVLA-OFT | MAE-D (`Top-1`) | **97.34** / **96.14** / **7.14** | 80.56 / **81.10** / 63.71 | **92.63** / **93.15** / **39.31** | 78.57 / 64.08 / **45.06** |
-| QwenPI-Flow | MAE-C (`Top-1`) | 80.57 / 80.01 / 60.12 | 75.94 / 76.48 / 81.18 | 84.80 / 85.46 / 68.53 | **79.52** / **76.24** / 55.60 |
 
 ## Repository Layout
 
