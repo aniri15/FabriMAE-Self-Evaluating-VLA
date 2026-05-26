@@ -1,6 +1,6 @@
 # MAE Self-Evaluation Framework for VLA
 
-LIBERO / LIBERO-REFLECT self-evaluation for three VLA baselines. Benchmark trees live in a **separate git repo** ([LIBERO-REFLECT](https://github.com/)) and are wired in via `third_party/LIBERO-REFLECT`. Launch scripts source `third_party/libero_env.sh` to switch `libero` / `libero_reflect`.
+LIBERO-REFLECT self-evaluation for three VLA baselines. Benchmark trees live in a **separate git repo** ([LIBERO-REFLECT](https://github.com/)) and are wired in via `third_party/LIBERO-REFLECT`. Launch scripts source `third_party/libero_env.sh` to switch standard (`libero`) and perturbation (`libero_reflect`) modes.
 
 ## Layout
 
@@ -14,7 +14,7 @@ LIBERO / LIBERO-REFLECT self-evaluation for three VLA baselines. Benchmark trees
 
 Benchmark data (separate repo, not in this git tree): LIBERO-REFLECT (`standard/` + `reflect/`).
 
-Model convenience symlinks: `openvla/.../LIBERO_PRO`, `openvla_oft/LIBERO`, `openvla_oft/.../LIBERO_PRO` → `third_party/LIBERO-REFLECT/*`.
+Model convenience symlinks: `openvla/.../LIBERO_REFLECT`, `openvla_oft/LIBERO`, `openvla_oft/.../LIBERO_REFLECT` → `third_party/LIBERO-REFLECT/*`.
 
 ## Self-eval modes (MAE-D / MAE-C)
 
@@ -54,7 +54,7 @@ Shell scripts set `MAIN_ROOT` to the repository root automatically; you can also
 | PI server | `starVLA` |
 | PI LIBERO client | your LIBERO env |
 
-Python ≥ 3.10 for LIBERO-PRO. Install LIBERO assets (BDDL, init files) as in upstream docs.
+Python ≥ 3.10 for LIBERO-REFLECT. Install benchmark assets (BDDL, init files) as in upstream docs.
 
 ---
 
@@ -121,7 +121,7 @@ python examples/LIBERO/eval_files/eval_libero.py \
   --args.attention-eval-ratios 0.01
 ```
 
-LIBERO-PRO batch (MAE-C): `python submit_libero_eval.py --suite libero_spatial --model pi --pert swap --attention-eval-mode eval --attention-eval-method mae-c --slurm`
+LIBERO-REFLECT batch (MAE-C): `python submit_libero_eval.py --suite libero_spatial --model pi --pert swap --attention-eval-mode eval --attention-eval-method mae-c --slurm`
 
 Outputs: `online_MAE-C_scores.jsonl`, `online_action_consistency_scores.jsonl`; or `saved_attentions/Pi/...` if saving attention.
 

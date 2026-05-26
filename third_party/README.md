@@ -7,7 +7,7 @@ They live in the standalone **LIBERO-REFLECT** repository, which contains:
 | Subfolder | MAE benchmark mode | Contents |
 |-----------|-------------------|----------|
 | `standard/` | `libero` | Standard LIBERO |
-| `reflect/` | `libero_reflect` | LIBERO-PRO swap / OOD perturbations |
+| `reflect/` | `libero_reflect` | Swap / OOD perturbations |
 
 This repo wires that checkout in via `third_party/LIBERO-REFLECT` (symlink).
 
@@ -27,7 +27,5 @@ If the checkout is elsewhere:
 export LIBERO_REFLECT_ROOT=/path/to/LIBERO-REFLECT
 bash third_party/setup_libero_reflect.sh
 ```
-
-Legacy alias: `LIBERO_BENCHMARK=libero_pro` still maps to `libero_reflect`.
 
 The old `setup_vendor_symlinks.sh` is deprecated; use `setup_libero_reflect.sh`.
