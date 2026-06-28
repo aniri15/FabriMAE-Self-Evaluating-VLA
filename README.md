@@ -12,6 +12,7 @@ This repository implements Markov Attention Entropy (MAE), a white-box self-eval
 │   └── setup_libero_reflect.sh
 ├── openvla/
 ├── openvla_oft/
+├── openpi/
 └── starVLA/
 ```
 
@@ -145,6 +146,125 @@ python submit_libero_eval.py \
 
 Outputs include `online_MAE-C_scores.jsonl` and `online_action_consistency_scores.jsonl`. Saved attention outputs, when enabled, are stored under `saved_attentions/Pi/`.
 
+### FabriX-MAE on pi0.5
+
+FabriX-MAE is the pi0.5/OpenPI implementation of our masked self-evaluation and test-time selection method. It runs on LIBERO-plus through `openpi/` and samples multiple action candidates at inference time.
+
+Environment setup should follow the upstream OpenPI pi0.5 instructions and the LIBERO-plus installation instructions. In practice, this means:
+
+- Install and verify the OpenPI environment for pi0.5 inference.
+- Install LIBERO-plus with its assets, BDDL files, and initialization states.
+- Download the pi0.5 checkpoints into a cache directory visible to OpenPI.
+- Make sure `openpi/scripts/run_pi05_libero_plus_eval.sh` can start the policy server and LIBERO-plus evaluator in the same environment.
+
+Required local layout:
+
+```text
+.
+├── openpi/
+└── <project>_link/
+    ├── hf-cache/
+    ├── libero/LIBERO-plus/
+    └── openpi_storage/
+```
+
+The OpenPI scripts infer the repository root and the `*_link` directory automatically. If your layout is different, set:
+
+```bash
+export LINK_ROOT="<path_to_link_root>"
+export LIBERO_ROOT="${LINK_ROOT}/libero/LIBERO-plus"
+export HF_CACHE_ROOT="${LINK_ROOT}/hf-cache"
+export STORAGE_ROOT="${LINK_ROOT}/openpi_storage"
+```
+
+Common setup:
+
+```bash
+cd "${REPO_ROOT}/openpi"
+
+export LINK_ROOT="${LINK_ROOT:-$(find "${REPO_ROOT}" -maxdepth 1 -type d -name '*_link' -print -quit)}"
+export STORAGE_ROOT="${STORAGE_ROOT:-${LINK_ROOT}/openpi_storage}"
+export LIBERO_ROOT="${LIBERO_ROOT:-${LINK_ROOT}/libero/LIBERO-plus}"
+export HF_CACHE_ROOT="${HF_CACHE_ROOT:-${LINK_ROOT}/hf-cache}"
+
+export MODEL_NAME=pi05_libero
+export SUITE=libero_spatial
+export PERTURBATION=camera
+export TASK_START=0
+export NUM_TASKS=10
+export EPISODES_PER_TASK=1
+export MAX_STEPS=520
+export SEED=0
+export TTS_NUM_CANDIDATES=10
+export SAVE_ATTENTION_METRICS=0
+```
+
+Run FabriX-MAE in independent mode:
+
+```bash
+export OUT_ROOT="${STORAGE_ROOT}/data/libero_plus_eval_fabrix_mae_independent"
+
+TTS_MODE=independent \
+TTS_SCORE_MODE=mae \
+ATTENTION_EVAL_MODE=mac \
+ATTENTION_EVAL_RATIOS=0.01 \
+bash scripts/run_pi05_libero_plus_eval.sh
+```
+
+Independent mode samples `TTS_NUM_CANDIDATES` complete action chunks from the same observation and selects the candidate using the configured score.
+
+Run FabriX-MAE in branch mode:
+
+```bash
+export OUT_ROOT="${STORAGE_ROOT}/data/libero_plus_eval_fabrix_mae_branch"
+
+TTS_MODE=branch \
+TTS_SCORE_MODE=mae \
+ATTENTION_EVAL_MODE=mac \
+ATTENTION_EVAL_RATIOS=0.01 \
+TTS_BRANCH_RATIO=0.2 \
+TTS_BRANCH_NOISE_SCALE=0.1 \
+bash scripts/run_pi05_libero_plus_eval.sh
+```
+
+Branch mode shares the early ODE denoising steps, branches into `TTS_NUM_CANDIDATES` candidates at `TTS_BRANCH_RATIO`, adds noise controlled by `TTS_BRANCH_NOISE_SCALE`, and selects one candidate with the configured score.
+
+To run masked FabriX-MAE scores, change `TTS_SCORE_MODE` and `FLOW_MG_MASK`:
+
+```bash
+TTS_MODE=branch \
+TTS_SCORE_MODE=mae_velocity_diff \
+FLOW_MG_MASK=vision \
+FLOW_MG_STEPS=4,7,9 \
+TTS_BRANCH_RATIO=0.2 \
+TTS_BRANCH_NOISE_SCALE=0.1 \
+bash scripts/run_pi05_libero_plus_eval.sh
+```
+
+Mask options:
+
+| Option | Meaning |
+| --- | --- |
+| `FLOW_MG_MASK=vision` | Mask visual tokens and score how much the selected signal changes. |
+| `FLOW_MG_MASK=language` | Mask language tokens. |
+| `FLOW_MG_MASK=language_vision` | Mask both language and visual tokens. |
+
+Score options:
+
+| Option | Meaning |
+| --- | --- |
+| `TTS_SCORE_MODE=mae_diff` | Select candidates by masked-vs-full MAE score difference. |
+| `TTS_SCORE_MODE=velocity_diff` | Select candidates by masked-vs-full ODE velocity difference. |
+| `TTS_SCORE_MODE=mae_velocity_diff` | Min-max normalize both scores across candidates and use a 50/50 average. |
+
+Results are written under:
+
+```text
+${OUT_ROOT}/pi05_libero/<suite>/<perturbation>/tasks_0_<N-1>_seed0/
+```
+
+Each result directory contains `summary.json`, `episodes.csv`, `gpu_usage.csv`, and `policy_server.log`.
+
 ## LIBERO-Reflect Perturbation Configuration
 
 LIBERO-Reflect evaluation configuration files are located at:
@@ -179,6 +299,8 @@ This framework builds on the following open-source projects:
 
 - [LIBERO](https://github.com/Lifelong-Robot-Learning/LIBERO): lifelong robot learning benchmark
 - [LIBERO-PRO](https://github.com/Zxy-MLlab/LIBERO-PRO): LIBERO evaluation extension with OOD perturbations
+- [LIBERO-PLUS](https://github.com/sylvestf/LIBERO-plus): LIBERO evaluation extension with different perturbations
 - [OpenVLA](https://github.com/openvla/openvla): vision-language-action policy
 - [OpenVLA-OFT](https://github.com/moojink/openvla-oft): optimized fine-tuning and inference for OpenVLA
 - [starVLA](https://github.com/starVLA/starVLA): QwenPI-Flow policy implementation
+- [openpi](https://github.com/Physical-Intelligence/openpi): PI implementation
