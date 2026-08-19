@@ -16,6 +16,26 @@ LIBERO_ROOT="${LIBERO_ROOT:-$LINK_ROOT/libero/LIBERO-plus}"
 HF_CACHE_ROOT="${HF_CACHE_ROOT:-$LINK_ROOT/hf-cache}"
 VENV="${VENV:-$OPENPI_ROOT/.venv}"
 
+BENCHMARK="${1:-${BENCHMARK:-libero_plus}}"
+ATTENTION_EVAL_METHOD_WAS_SET=0
+if [[ -n "${ATTENTION_EVAL_METHOD:-}" ]]; then
+  ATTENTION_EVAL_METHOD_WAS_SET=1
+fi
+if [[ $# -ge 2 ]]; then
+  SUITE="$2"
+fi
+if [[ $# -ge 3 ]]; then
+  ATTENTION_EVAL_METHOD="$3"
+  ATTENTION_EVAL_METHOD_WAS_SET=1
+fi
+case "$BENCHMARK" in
+  libero_plus|libero-plus|liberoplus) ;;
+  *)
+    echo "Unsupported BENCHMARK=$BENCHMARK; expected libero_plus" >&2
+    exit 2
+    ;;
+esac
+
 MODEL_NAME="${MODEL_NAME:-pi05_libero}"
 SUITE="${SUITE:-libero_mix}"
 TASK_START="${TASK_START:-0}"
@@ -37,6 +57,8 @@ NUM_STEPS_WAIT="${NUM_STEPS_WAIT:-10}"
 PORT="${PORT:-$((18000 + RANDOM % 1000))}"
 GPU_LOG_INTERVAL_SEC="${GPU_LOG_INTERVAL_SEC:-60}"
 SAVE_ATTENTION_METRICS="${SAVE_ATTENTION_METRICS:-0}"
+SAVE_ONLINE_MAE="${SAVE_ONLINE_MAE:-}"
+ATTENTION_EVAL_METHOD="${ATTENTION_EVAL_METHOD:-none}"
 TTS_MODE="${TTS_MODE:-none}"
 TTS_NUM_CANDIDATES="${TTS_NUM_CANDIDATES:-4}"
 TTS_BRANCH_RATIO="${TTS_BRANCH_RATIO:-0.4}"
@@ -44,6 +66,26 @@ TTS_BRANCH_NOISE_SCALE="${TTS_BRANCH_NOISE_SCALE:-0.1}"
 TTS_SCORE_MODE="${TTS_SCORE_MODE:-mae}"
 FLOW_MG_MASK="${FLOW_MG_MASK:-language}"
 FLOW_MG_STEPS="${FLOW_MG_STEPS:-4,7,9}"
+case "$ATTENTION_EVAL_METHOD" in
+  none|"") ATTENTION_EVAL_INTERNAL_MODE="" ;;
+  mae-c|mac) ATTENTION_EVAL_INTERNAL_MODE="mac" ;;
+  mae-d|mad) ATTENTION_EVAL_INTERNAL_MODE="mad" ;;
+  both) ATTENTION_EVAL_INTERNAL_MODE="both" ;;
+  *)
+    echo "Unknown ATTENTION_EVAL_METHOD=$ATTENTION_EVAL_METHOD; expected none, mae-c, mae-d, mac, mad, or both" >&2
+    exit 2
+    ;;
+esac
+
+if [[ "$ATTENTION_EVAL_INTERNAL_MODE" != "" ]]; then
+  if [[ -z "$SAVE_ONLINE_MAE" && "$ATTENTION_EVAL_METHOD_WAS_SET" == "1" ]]; then
+    SAVE_ONLINE_MAE=1
+  fi
+  if [[ -z "${ATTENTION_EVAL_MODE:-}" || "${ATTENTION_EVAL_MODE:-}" == "off" ]]; then
+    ATTENTION_EVAL_MODE="$ATTENTION_EVAL_INTERNAL_MODE"
+  fi
+fi
+
 if [[ "$TTS_MODE" == "independent" ]]; then
   if [[ "$TTS_SCORE_MODE" == "velocity_diff" ]]; then
     OUT_ROOT="${OUT_ROOT:-$STORAGE_ROOT/data/libero_plus_eval_tts_independent_flowmg_${FLOW_MG_MASK}}"
@@ -85,6 +127,21 @@ case "$ATTENTION_EVAL_MODE" in
     ;;
 esac
 
+SAVE_ONLINE_MAE="${SAVE_ONLINE_MAE:-0}"
+
+if [[ "$SAVE_ONLINE_MAE" != "0" && "$SAVE_ONLINE_MAE" != "false" && "$SAVE_ONLINE_MAE" != "False" ]]; then
+  if [[ "$ATTENTION_EVAL_METHOD" == "none" || "$ATTENTION_EVAL_METHOD" == "" ]]; then
+    ATTENTION_EVAL_METHOD="mae-c"
+  fi
+  if [[ "$ATTENTION_EVAL_MODE" == "off" ]]; then
+    case "$ATTENTION_EVAL_METHOD" in
+      mae-c|mac) ATTENTION_EVAL_MODE="mac" ;;
+      mae-d|mad) ATTENTION_EVAL_MODE="mad" ;;
+      both) ATTENTION_EVAL_MODE="both" ;;
+    esac
+  fi
+fi
+
 case "$TTS_MODE" in
   none|independent|branch) ;;
   *)
@@ -114,10 +171,31 @@ if [[ "$TTS_MODE" != "none" && "$ATTENTION_EVAL_MODE" == "off" ]]; then
   exit 2
 fi
 
+if [[ "$ATTENTION_EVAL_MODE" != "off" && "$ATTENTION_EVAL_METHOD" == "none" ]]; then
+  case "$ATTENTION_EVAL_MODE" in
+    mac) ATTENTION_EVAL_METHOD="mae-c" ;;
+    mad) ATTENTION_EVAL_METHOD="mae-d" ;;
+    both) ATTENTION_EVAL_METHOD="both" ;;
+  esac
+fi
+case "$ATTENTION_EVAL_METHOD" in
+  mae-c|mac) ONLINE_MAE_OUTPUT_NAME="${ONLINE_MAE_OUTPUT_NAME:-online_MAE-C_scores.jsonl}" ;;
+  mae-d|mad) ONLINE_MAE_OUTPUT_NAME="${ONLINE_MAE_OUTPUT_NAME:-online_MAE-D_scores.jsonl}" ;;
+  *) ONLINE_MAE_OUTPUT_NAME="${ONLINE_MAE_OUTPUT_NAME:-online_MAE_scores.jsonl}" ;;
+esac
+
 case "$SAVE_ATTENTION_METRICS" in
   0|1|false|true|False|True) ;;
   *)
     echo "Unknown SAVE_ATTENTION_METRICS=$SAVE_ATTENTION_METRICS; expected 0 or 1" >&2
+    exit 2
+    ;;
+esac
+
+case "$SAVE_ONLINE_MAE" in
+  0|1|false|true|False|True) ;;
+  *)
+    echo "Unknown SAVE_ONLINE_MAE=$SAVE_ONLINE_MAE; expected 0 or 1" >&2
     exit 2
     ;;
 esac
@@ -175,8 +253,11 @@ echo "Environment wait steps: $NUM_STEPS_WAIT"
 echo "Policy server port:     $PORT"
 echo "GPU log interval:       ${GPU_LOG_INTERVAL_SEC}s"
 echo "Attention eval mode:    $ATTENTION_EVAL_MODE"
+echo "Attention eval method:  $ATTENTION_EVAL_METHOD"
 echo "Attention eval ratios:  $ATTENTION_EVAL_RATIOS"
 echo "Save attention metrics: $SAVE_ATTENTION_METRICS"
+echo "Save online MAE:        $SAVE_ONLINE_MAE"
+echo "Online MAE output:      $ONLINE_MAE_OUTPUT_NAME"
 echo "TTS mode:               $TTS_MODE"
 echo "TTS branch ratio:       $TTS_BRANCH_RATIO"
 echo "TTS branch noise scale: $TTS_BRANCH_NOISE_SCALE"
@@ -228,6 +309,7 @@ if [[ "$ATTENTION_EVAL_MODE" != "off" ]]; then
   SERVER_ARGS+=(
     --attention-eval
     --attention-eval-mode "$ATTENTION_EVAL_MODE"
+    --attention-eval-method "$ATTENTION_EVAL_METHOD"
     --attention-eval-ratios "$ATTENTION_EVAL_RATIOS"
     --tts-mode "$TTS_MODE"
     --tts-num-candidates "$TTS_NUM_CANDIDATES"
@@ -292,7 +374,9 @@ EVAL_ARGS=(
   --num-steps-wait "$NUM_STEPS_WAIT" \
   --seed "$SEED" \
   --attention-eval-mode "$ATTENTION_EVAL_MODE" \
+  --attention-eval-method "$ATTENTION_EVAL_METHOD" \
   --attention-eval-ratios "$ATTENTION_EVAL_RATIOS" \
+  --online-mae-output-name "$ONLINE_MAE_OUTPUT_NAME" \
   --tts-mode "$TTS_MODE" \
   --tts-num-candidates "$TTS_NUM_CANDIDATES" \
   --tts-selection-ratio "$TTS_SELECTION_RATIO" \
@@ -308,6 +392,11 @@ case "$SAVE_ATTENTION_METRICS" in
     EVAL_ARGS+=(--save-attention-metrics)
     ;;
 esac
+case "$SAVE_ONLINE_MAE" in
+  1|true|True)
+    EVAL_ARGS+=(--save-online-mae)
+    ;;
+esac
 "${EVAL_ARGS[@]}"
 EVAL_END_EPOCH="$(date +%s)"
 
@@ -320,5 +409,10 @@ echo "GPU usage log:      $GPU_LOG"
 case "$SAVE_ATTENTION_METRICS" in
   1|true|True)
   echo "Attention metrics:  $OUT_DIR/attention_metrics.jsonl"
+    ;;
+esac
+case "$SAVE_ONLINE_MAE" in
+  1|true|True)
+  echo "Online MAE scores: $OUT_DIR/$ONLINE_MAE_OUTPUT_NAME"
     ;;
 esac

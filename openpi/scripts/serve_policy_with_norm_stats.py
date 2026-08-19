@@ -33,6 +33,17 @@ def _parse_flow_mg_steps(value: str) -> tuple[int, ...]:
     return steps
 
 
+def _attention_method_to_mode(method: str) -> str:
+    normalized = method.lower().replace("_", "-")
+    if normalized in ("mae-c", "mac"):
+        return "mac"
+    if normalized in ("mae-d", "mad"):
+        return "mad"
+    if normalized == "both":
+        return "both"
+    raise argparse.ArgumentTypeError("Attention eval method must be mae-c, mae-d, mac, mad, or both.")
+
+
 def _load_norm_stats(config_name: str, checkpoint_dir: pathlib.Path, norm_stats_checkpoint: pathlib.Path | None):
     train_config = _config.get_config(config_name)
     data_config = train_config.data.create(train_config.assets_dirs, train_config.model)
@@ -71,6 +82,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--attention-eval", action="store_true", help="Return final-ODE-step MAC/MAD metrics.")
     parser.add_argument("--attention-eval-mode", choices=("mac", "mad", "both"), default="both")
     parser.add_argument(
+        "--attention-eval-method",
+        type=_attention_method_to_mode,
+        default=None,
+        help="User-facing attention method. mae-c maps to mac; mae-d maps to mad.",
+    )
+    parser.add_argument(
         "--attention-eval-ratios",
         type=_parse_ratios,
         default=(0.01, 0.05, 0.10, 0.50),
@@ -98,6 +115,8 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
+    if args.attention_eval_method is not None:
+        args.attention_eval_mode = args.attention_eval_method
     train_config = _config.get_config(args.config)
     norm_stats = _load_norm_stats(args.config, args.checkpoint_dir, args.norm_stats_checkpoint)
 

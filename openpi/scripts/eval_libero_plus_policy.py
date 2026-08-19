@@ -34,6 +34,24 @@ PERTURBATION_ALIASES = {
 }
 
 
+ATTENTION_METHOD_TO_MODE = {
+    "mae-c": "mac",
+    "mac": "mac",
+    "mae-d": "mad",
+    "mad": "mad",
+    "both": "both",
+}
+
+
+ATTENTION_METHOD_LABEL = {
+    "mae-c": "MAE-C",
+    "mac": "MAE-C",
+    "mae-d": "MAE-D",
+    "mad": "MAE-D",
+    "both": "both",
+}
+
+
 def _default_libero_root() -> str:
     repo_root = pathlib.Path(__file__).resolve().parents[1]
     project_root = repo_root.parents[1]
@@ -204,6 +222,23 @@ def _resolve_language_bddl_path(bddl_file_name: str) -> pathlib.Path:
     raise FileNotFoundError(f"Could not resolve a physical BDDL file for {bddl_file_name}")
 
 
+def _ratio_tag(ratio: float) -> int:
+    return round(ratio * 100)
+
+
+def _online_score_key(method: str, ratio: float) -> str:
+    label = ATTENTION_METHOD_LABEL[method]
+    orientation = "bottom" if ATTENTION_METHOD_TO_MODE[method] == "mac" else "top"
+    return f"{label}_{orientation}{_ratio_tag(ratio)}"
+
+
+def _metric_name_for_method(method: str, ratio: float, tts_mode: str) -> str:
+    suffix = "_selected" if tts_mode != "none" else ""
+    if ATTENTION_METHOD_TO_MODE[method] == "mac":
+        return f"mac_bottom{_ratio_tag(ratio)}{suffix}"
+    return f"mad_top{_ratio_tag(ratio)}{suffix}"
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--libero-root", default=_default_libero_root())
@@ -229,6 +264,12 @@ def parse_args() -> argparse.Namespace:
         help="Compute final-ODE-step visual attention metrics returned by the policy server.",
     )
     parser.add_argument(
+        "--attention-eval-method",
+        choices=sorted(ATTENTION_METHOD_TO_MODE),
+        default="mae-c",
+        help="User-facing online attention method. mae-c maps to mac; mae-d maps to mad.",
+    )
+    parser.add_argument(
         "--attention-eval-ratios",
         default="0.01,0.05,0.1,0.5",
         help="Comma-separated head ratios requested from the policy server.",
@@ -250,6 +291,12 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Write per-policy-query attention metrics to attention_metrics.jsonl. Disabled by default.",
     )
+    parser.add_argument(
+        "--save-online-mae",
+        action="store_true",
+        help="Write starVLA-style online MAE records per episode.",
+    )
+    parser.add_argument("--online-mae-output-name", default=None)
     parser.add_argument("--out-dir", required=True, type=pathlib.Path)
     return parser.parse_args()
 
@@ -259,6 +306,19 @@ def main() -> None:
     attention_eval_ratios = tuple(float(item.strip()) for item in args.attention_eval_ratios.split(",") if item.strip())
     if not attention_eval_ratios or any(ratio <= 0 or ratio > 1 for ratio in attention_eval_ratios):
         raise ValueError(f"Attention eval ratios must be in (0, 1], got: {attention_eval_ratios}")
+    online_metric_mode = ATTENTION_METHOD_TO_MODE[args.attention_eval_method]
+    online_method_label = ATTENTION_METHOD_LABEL[args.attention_eval_method]
+    if args.online_mae_output_name is None:
+        args.online_mae_output_name = f"online_{online_method_label}_scores.jsonl"
+    if args.save_online_mae and args.attention_eval_mode == "off":
+        raise ValueError("save-online-mae requires attention-eval-mode mac, mad, or both.")
+    if args.save_online_mae and online_metric_mode == "both":
+        raise ValueError("save-online-mae requires attention-eval-method mae-c or mae-d, not both.")
+    if args.save_online_mae and args.attention_eval_mode not in (online_metric_mode, "both"):
+        raise ValueError(
+            f"save-online-mae with {args.attention_eval_method} requires "
+            f"attention-eval-mode {online_metric_mode!r} or 'both', got {args.attention_eval_mode!r}."
+        )
     if args.tts_mode == "none":
         attention_scalar_metrics = tuple(
             f"{metric}_{selection}{round(ratio * 100)}"
@@ -317,6 +377,7 @@ def main() -> None:
     )
     attention_metric_sums: dict[str, float] = collections.defaultdict(float)
     attention_metric_counts: dict[str, int] = collections.defaultdict(int)
+    online_mae_records: list[dict[str, Any]] = []
 
     print(
         json.dumps(
@@ -338,6 +399,8 @@ def main() -> None:
                 "num_steps_wait": args.num_steps_wait,
                 "seed": args.seed,
                 "attention_eval_mode": args.attention_eval_mode,
+                "attention_eval_method": args.attention_eval_method,
+                "attention_eval_method_label": online_method_label,
                 "attention_eval_ratios": attention_eval_ratios,
                 "save_attention_metrics": args.save_attention_metrics,
                 "tts_mode": args.tts_mode,
@@ -396,6 +459,7 @@ def main() -> None:
             policy.reset()
             action_plan: collections.deque[np.ndarray] = collections.deque()
             episode_attention_metrics: dict[str, list[float]] = collections.defaultdict(list)
+            episode_online_mae_scores: dict[str, list[float]] = collections.defaultdict(list)
             policy_query = 0
 
             success = False
@@ -452,6 +516,15 @@ def main() -> None:
                                     if not name.endswith(("_layers", "_steps_layers")) and np.asarray(value).ndim == 0:
                                         attention_metric_sums[name] += float(value)
                                         attention_metric_counts[name] += 1
+                                if args.save_online_mae:
+                                    for ratio in attention_eval_ratios:
+                                        metric_name = _metric_name_for_method(
+                                            args.attention_eval_method, ratio, args.tts_mode
+                                        )
+                                        if metric_name in selected_metrics:
+                                            episode_online_mae_scores[
+                                                _online_score_key(args.attention_eval_method, ratio)
+                                            ].append(float(selected_metrics[metric_name]))
                             if action_chunk.ndim == 1:
                                 action_chunk = action_chunk[None, :]
                             if len(action_chunk) < args.replan_steps:
@@ -523,6 +596,25 @@ def main() -> None:
             }
             rows.append(row)
             print(json.dumps(row, ensure_ascii=False), flush=True)
+            if args.save_online_mae:
+                online_scores = {
+                    name: float(np.mean(values)) if values else float("nan")
+                    for name, values in sorted(episode_online_mae_scores.items())
+                }
+                online_mae_records.append(
+                    {
+                        "task_id": int(task_id + 1),
+                        "task_name": task.name,
+                        "task_description": language,
+                        "episode_idx": int(episode + 1),
+                        "episode_number": int(completed_episodes),
+                        "is_success": bool(success),
+                        "num_queries_used": int(policy_query),
+                        "attention_eval_method": online_method_label,
+                        "attention_eval_internal_mode": online_metric_mode,
+                        "scores": online_scores,
+                    }
+                )
 
         completed_tasks = task_number
         total_elapsed_sec = time.monotonic() - eval_start
@@ -556,6 +648,11 @@ def main() -> None:
 
     if attention_file is not None:
         attention_file.close()
+    online_mae_path = args.out_dir / args.online_mae_output_name
+    if args.save_online_mae:
+        with online_mae_path.open("w", encoding="utf-8") as f:
+            for record in online_mae_records:
+                f.write(json.dumps(record, ensure_ascii=False) + "\n")
     attention_summary = {
         name: attention_metric_sums[name] / attention_metric_counts[name]
         for name in sorted(attention_metric_counts)
@@ -575,8 +672,13 @@ def main() -> None:
         "elapsed_sec": round(time.monotonic() - eval_start, 3),
         "episodes_csv": str(csv_path),
         "attention_eval_mode": args.attention_eval_mode,
+        "attention_eval_method": args.attention_eval_method,
+        "attention_eval_method_label": online_method_label,
+        "attention_eval_internal_mode": online_metric_mode,
         "attention_eval_ratios": attention_eval_ratios,
         "save_attention_metrics": args.save_attention_metrics,
+        "save_online_mae": args.save_online_mae,
+        "online_mae_jsonl": str(online_mae_path) if args.save_online_mae else None,
         "tts_mode": args.tts_mode,
         "tts_num_candidates": args.tts_num_candidates,
         "tts_selection_ratio": args.tts_selection_ratio,
