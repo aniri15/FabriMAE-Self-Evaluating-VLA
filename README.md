@@ -148,7 +148,7 @@ Outputs include `online_MAE-C_scores.jsonl` and `online_action_consistency_score
 
 ### FabriX-MAE on pi0.5
 
-FabriX-MAE is the pi0.5/OpenPI implementation of our masked self-evaluation and test-time selection method. It runs on LIBERO-plus through `openpi/` and samples multiple action candidates at inference time.
+FabriX-MAE is the pi0.5/OpenPI implementation of our MAE-based test-time selection method. It runs on LIBERO-plus through `openpi/` and samples multiple action candidates at inference time.
 
 Environment setup should follow the upstream OpenPI pi0.5 instructions and the LIBERO-plus installation instructions. In practice, this means:
 
@@ -193,11 +193,19 @@ export PERTURBATION=camera
 export TASK_START=0
 export NUM_TASKS=10
 export EPISODES_PER_TASK=1
-export MAX_STEPS=520
-export SEED=0
+export SEED=7
 export TTS_NUM_CANDIDATES=10
 export SAVE_ATTENTION_METRICS=0
 ```
+
+If `MAX_STEPS` is not set, `run_pi05_libero_plus_eval.sh` uses ACoT-style per-suite limits:
+
+| Suite | Default max steps |
+| --- | ---: |
+| `libero_spatial` | 660 |
+| `libero_object` | 840 |
+| `libero_goal` | 900 |
+| `libero_10` | 1560 |
 
 Run FabriX-MAE in independent mode:
 
@@ -222,40 +230,14 @@ TTS_MODE=branch \
 TTS_SCORE_MODE=mae \
 ATTENTION_EVAL_MODE=mac \
 ATTENTION_EVAL_RATIOS=0.01 \
-TTS_BRANCH_RATIO=0.2 \
-TTS_BRANCH_NOISE_SCALE=0.1 \
+TTS_NUM_CANDIDATES=10 \
+TTS_BRANCH_RATIO=0.7 \
+TTS_BRANCH_NOISE_SCALE=0.15 \
+SAVE_ATTENTION_METRICS=0 \
 bash scripts/run_pi05_libero_plus_eval.sh
 ```
 
-Branch mode shares the early ODE denoising steps, branches into `TTS_NUM_CANDIDATES` candidates at `TTS_BRANCH_RATIO`, adds noise controlled by `TTS_BRANCH_NOISE_SCALE`, and selects one candidate with the configured score.
-
-To run masked FabriX-MAE scores, change `TTS_SCORE_MODE` and `FLOW_MG_MASK`:
-
-```bash
-TTS_MODE=branch \
-TTS_SCORE_MODE=mae_velocity_diff \
-FLOW_MG_MASK=vision \
-FLOW_MG_STEPS=4,7,9 \
-TTS_BRANCH_RATIO=0.2 \
-TTS_BRANCH_NOISE_SCALE=0.1 \
-bash scripts/run_pi05_libero_plus_eval.sh
-```
-
-Mask options:
-
-| Option | Meaning |
-| --- | --- |
-| `FLOW_MG_MASK=vision` | Mask visual tokens and score how much the selected signal changes. |
-| `FLOW_MG_MASK=language` | Mask language tokens. |
-| `FLOW_MG_MASK=language_vision` | Mask both language and visual tokens. |
-
-Score options:
-
-| Option | Meaning |
-| --- | --- |
-| `TTS_SCORE_MODE=mae_diff` | Select candidates by masked-vs-full MAE score difference. |
-| `TTS_SCORE_MODE=velocity_diff` | Select candidates by masked-vs-full ODE velocity difference. |
-| `TTS_SCORE_MODE=mae_velocity_diff` | Min-max normalize both scores across candidates and use a 50/50 average. |
+Branch mode shares the early ODE denoising steps, branches into `TTS_NUM_CANDIDATES` candidates at `TTS_BRANCH_RATIO`, adds noise controlled by `TTS_BRANCH_NOISE_SCALE`, and selects one candidate with the configured MAE/MAC score. In our completed LIBERO-plus fine-grid sweep, the best branch setting was `TTS_BRANCH_RATIO=0.7` and `TTS_BRANCH_NOISE_SCALE=0.15`.
 
 Results are written under:
 
