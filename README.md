@@ -111,6 +111,21 @@ Optional controls: `NUM_TRIALS_PER_TASK`, `CONSISTENCY_REPEATS`, `ACTION_NOISE_S
 
 Results are written as `self_eval_consistency_scores.json` or `online_MAE-D_scores.jsonl` under the evaluation results directory.
 
+### PI0.5 / OpenPI
+
+```bash
+cd "${REPO_ROOT}/openpi"
+export MODEL_NAME=pi05_libero
+export CHECKPOINT_DIR="${REPO_ROOT}/checkpoints/<pi05-libero-checkpoint>"
+export NORM_STATS_CHECKPOINT="${REPO_ROOT}/checkpoints/<pi05-libero-checkpoint>"
+
+bash scripts/run_pi05_libero_plus_eval.sh libero_plus libero_spatial mae-c
+```
+
+Optional controls: `TASK_START`, `NUM_TASKS`, `EPISODES_PER_TASK`, `PERTURBATION`, `REPLAN_STEPS`, `NUM_STEPS_WAIT`, `MAX_STEPS`, `ATTENTION_EVAL_RATIOS`, and `SAVE_ATTENTION_METRICS`.
+
+Results are written as `online_MAE-C_scores.jsonl`, `episodes.csv`, and `summary.json` under the OpenPI evaluation results directory.
+
 ### QwenPI-Flow
 
 QwenPI-Flow is implemented under `starVLA/` and uses two processes: a policy server and a LIBERO client.
