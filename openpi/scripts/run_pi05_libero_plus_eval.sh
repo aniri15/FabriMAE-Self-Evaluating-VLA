@@ -21,8 +21,16 @@ SUITE="${SUITE:-libero_mix}"
 TASK_START="${TASK_START:-0}"
 NUM_TASKS="${NUM_TASKS:-5}"
 EPISODES_PER_TASK="${EPISODES_PER_TASK:-5}"
-MAX_STEPS="${MAX_STEPS:-520}"
-SEED="${SEED:-0}"
+if [[ -z "${MAX_STEPS:-}" ]]; then
+  case "$SUITE" in
+    libero_spatial) MAX_STEPS=660 ;;
+    libero_object) MAX_STEPS=840 ;;
+    libero_goal) MAX_STEPS=900 ;;
+    libero_10) MAX_STEPS=1560 ;;
+    *) MAX_STEPS=520 ;;
+  esac
+fi
+SEED="${SEED:-7}"
 PERTURBATION="${PERTURBATION:-all}"
 REPLAN_STEPS="${REPLAN_STEPS:-5}"
 NUM_STEPS_WAIT="${NUM_STEPS_WAIT:-10}"

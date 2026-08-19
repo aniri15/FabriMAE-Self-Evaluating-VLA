@@ -221,7 +221,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--resize-size", type=int, default=224)
     parser.add_argument("--replan-steps", type=int, default=5)
     parser.add_argument("--num-steps-wait", type=int, default=10)
-    parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--seed", type=int, default=7)
     parser.add_argument(
         "--attention-eval-mode",
         choices=("off", "mac", "mad", "both"),
@@ -303,7 +303,6 @@ def main() -> None:
     policy = WebsocketClientPolicy(args.host, args.port)
     benchmark = get_benchmark(args.suite)(args.task_order_index)
 
-    rng = np.random.default_rng(args.seed)
     category_task_ids = _select_task_ids(benchmark, libero_root, args.suite, args.perturbation)
     end_task_offset = min(args.task_start + args.num_tasks, len(category_task_ids))
     selected_task_ids = category_task_ids[args.task_start : end_task_offset]
@@ -390,9 +389,9 @@ def main() -> None:
         for episode in range(args.episodes_per_task):
             episode_start = time.monotonic()
             env = OffScreenRenderEnv(**env_args)
-            env.seed(args.seed + task_id * 1000 + episode)
+            env.seed(args.seed)
             env.reset()
-            init_idx = int(rng.integers(0, len(init_states)))
+            init_idx = episode % len(init_states)
             obs = env.set_init_state(init_states[init_idx])
             policy.reset()
             action_plan: collections.deque[np.ndarray] = collections.deque()
@@ -401,6 +400,7 @@ def main() -> None:
 
             success = False
             steps = 0
+            episode_error = ""
             try:
                 for _ in range(args.num_steps_wait):
                     obs, _, done, _ = env.step(LIBERO_DUMMY_ACTION)
@@ -465,6 +465,24 @@ def main() -> None:
                         if bool(done):
                             success = True
                             break
+            except Exception as exc:
+                episode_error = f"{type(exc).__name__}: {exc}"
+                print(
+                    json.dumps(
+                        {
+                            "event": "episode_error",
+                            "suite": args.suite,
+                            "perturbation": args.perturbation,
+                            "task_id": task_id,
+                            "task_name": task.name,
+                            "episode": episode,
+                            "steps": steps,
+                            "error": episode_error,
+                        },
+                        ensure_ascii=False,
+                    ),
+                    flush=True,
+                )
             finally:
                 env.close()
 
@@ -487,6 +505,7 @@ def main() -> None:
                 "episode": episode,
                 "success": int(success),
                 "steps": steps,
+                "episode_error": episode_error,
                 "episode_elapsed_sec": round(now - episode_start, 3),
                 "task_elapsed_sec": round(now - task_start, 3),
                 "total_elapsed_sec": round(total_elapsed_sec, 3),
