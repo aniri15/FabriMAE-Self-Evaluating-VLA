@@ -1,5 +1,12 @@
 # FabriMAE I Trust Myself? Self-Evaluating VLA Action Generation with Markov Attention Entropy
 
+<p align="center">
+  <a href="https://github.com/aniri15/FabriMAE-Self-Evaluating-VLA"><img alt="GitHub" src="https://img.shields.io/badge/GitHub-OPD--V-181717?logo=github"></a>
+  <a href="https://arxiv.org/abs/2608.16697"><img alt="arXiv" src="https://img.shields.io/badge/arXiv-2608.05131-b31b1b?logo=arxiv&logoColor=white"></a>
+  <a href="./LICENSE"><img alt="License" src="https://img.shields.io/badge/License-Apache--2.0-green"></a>
+</p>
+
+
 This repository implements Markov Attention Entropy (MAE), a white-box self-evaluation framework across heterogeneous VLAs, and evaluates it on LIBERO-Reflect. Benchmark assets are kept in a separate checkout and linked through `third_party/LIBERO-REFLECT`. Evaluation scripts use `third_party/libero_env.sh` to switch between standard (`libero`) and perturbed (`libero_reflect`) rollouts.
 
 
