@@ -1,15 +1,15 @@
-# FabriMAE-Self-Evaluating-VLA
+# FabriMAE I Trust Myself? Self-Evaluating VLA Action Generation with Markov Attention Entropy
 
 <p align="center">
   <a href="https://github.com/aniri15/FabriMAE-Self-Evaluating-VLA"><img alt="GitHub" src="https://img.shields.io/badge/GitHub-FabriMAE-181717?logo=github"></a>
-  <a href="https://arxiv.org/abs/2608.16697"><img alt="arXiv" src="https://img.shields.io/badge/arXiv-2608.05131-b31b1b?logo=arxiv&logoColor=white"></a>
+  <a href="https://arxiv.org/abs/2608.16697"><img alt="arXiv" src="https://img.shields.io/badge/arXiv-2608.16697-b31b1b?logo=arxiv&logoColor=white"></a>
   <a href="./LICENSE"><img alt="License" src="https://img.shields.io/badge/License-Apache--2.0-green"></a>
 </p>
 
 
 FabriMAE is a white-box self-evaluation and verifier-free test-time action selection framework for Vision-Language-Action models (VLAs). Instead of relying on expert annotations, external verifiers, or output-only uncertainty, FabriMAE converts internal visual attention dynamics during latent action generation into architecture-aware reliability scores.
 
-This repository contains the evaluation code, LIBERO-Reflect data preparation utilities, model-specific MAE scoring implementations, FabriX-MAE test-time selection scripts, and resources for the paper:
+This repository contains the evaluation code, LIBERO-Reflect data preparation utilities, model-specific MAE scoring implementations, FabriMAE test-time selection scripts, and resources for the paper:
 
 **FabriMAE I Trust Myself? Self-Evaluating VLA Action Generation with Markov Attention Entropy**
 
@@ -19,7 +19,7 @@ This repository contains the evaluation code, LIBERO-Reflect data preparation ut
 - Architecture-aware MAE-D and MAE-C scoring for Latent-Readout and Latent-Refinement action generation.
 - Online scoring from the same policy forward pass used to generate actions.
 - LIBERO-Reflect setup utilities for standard and challenging robotic rollout evaluation.
-- FabriX-MAE verifier-free test-time action selection for PI-family policies.
+- FabriMAE verifier-free test-time action selection for PI-family policies.
 - Evaluation scripts for OpenVLA, OpenVLA-OFT, QwenPI-Flow, and PI0.5.
 
 ## Released Resources
@@ -38,7 +38,7 @@ This repository contains the evaluation code, LIBERO-Reflect data preparation ut
 
 During evaluation, MAE obtains attention from the policy forward pass, measures visual entropy over latent action generation, and converts that signal into reliability-oriented episode scores. MAE-D is used for Latent-Readout VLAs such as OpenVLA and OpenVLA-OFT, where reliable executions concentrate visual addressing. MAE-C is used for Latent-Refinement VLAs such as QwenPI-Flow and PI0.5, where reliable executions retain stronger visual exploration during refinement.
 
-FabriX-MAE further uses the MAE signal for verifier-free test-time action selection by sampling multiple candidate action chunks and selecting the candidate with the strongest reliability score. Benchmark assets are kept in a separate checkout and linked through `third_party/LIBERO-REFLECT`; evaluation scripts use `third_party/libero_env.sh` to switch between the standard side (`libero`) and the challenging side (`libero_reflect`) of LIBERO-Reflect.
+FabriMAE further uses the MAE signal for verifier-free test-time action selection by sampling multiple candidate action chunks and selecting the candidate with the strongest reliability score. Benchmark assets are kept in a separate checkout and linked through `third_party/LIBERO-REFLECT`; evaluation scripts use `third_party/libero_env.sh` to switch between the standard side (`libero`) and the challenging side (`libero_reflect`) of LIBERO-Reflect.
 
 <p align="center">
   <img src="figs/teaser.png" alt="FabriMAE method overview" width="95%">
@@ -57,7 +57,7 @@ FabriX-MAE further uses the MAE signal for verifier-free test-time action select
 └── starVLA/
 ```
 
-The `LIBERO-REFLECT` checkout is not stored in this repository. It provides the `standard/` and `reflect/` benchmark trees used by the evaluation scripts.
+The `LIBERO-REFLECT` checkout is not stored in this repository. It provides the `standard/` and `reflect/` benchmark trees used by the evaluation scripts, corresponding to the standard and challenging sides of LIBERO-Reflect.
 Convenience symlinks in the model directories point to the checkout under `third_party/LIBERO-REFLECT`.
 
 ## Metrics and Supported Modes
@@ -106,7 +106,7 @@ export CACHE_ROOT="${REPO_ROOT}/.cache"  # optional
 
 The launch scripts determine the repository root automatically. `REPO_ROOT` is useful when selecting checkpoints in commands below.
 
-| Model | Default Environment |
+| Model | Upstream Project / Environment Notes |
 | --- | --- |
 | OpenVLA | [OpenVLA](https://github.com/openvla/openvla) |
 | OpenVLA-OFT | [OpenVLA-OFT](https://github.com/moojink/openvla-oft) |
@@ -190,7 +190,7 @@ python examples/LIBERO/eval_files/eval_libero.py \
   --args.attention-eval-ratios 0.01
 ```
 
-To submit a perturbed LIBERO-Reflect run:
+To submit a challenging-side LIBERO-Reflect run:
 
 ```bash
 python submit_libero_eval.py \
@@ -204,18 +204,18 @@ python submit_libero_eval.py \
 
 Outputs include `online_MAE-C_scores.jsonl` and `online_action_consistency_scores.jsonl`. Saved attention outputs, when enabled, are stored under `saved_attentions/Pi/`.
 
-### FabriX-MAE on PI0.5
+### FabriMAE on PI0.5
 
-FabriX-MAE is the PI0.5 implementation of our MAE-guided verifier-free test-time action selection. It runs on LIBERO-plus through `openpi/` and samples multiple action candidates at inference time.
+FabriMAE is the PI0.5 implementation of our MAE-guided verifier-free test-time action selection. It runs on LIBERO-Plus through `openpi/` and samples multiple action candidates at inference time.
 
-Environment setup should follow the upstream OpenPI PI0.5 instructions and the LIBERO-plus installation instructions. In practice, this means:
+Environment setup should follow the upstream OpenPI PI0.5 instructions and the LIBERO-Plus installation instructions. In practice, this means:
 
 - Install and verify the OpenPI environment for PI0.5 inference.
-- Install LIBERO-plus with its assets, BDDL files, and initialization states.
+- Install LIBERO-Plus with its assets, BDDL files, and initialization states.
 - Download the PI0.5 checkpoints into a cache directory visible to OpenPI.
-- Make sure `openpi/scripts/run_pi05_libero_plus_eval.sh` can start the policy server and LIBERO-plus evaluator in the same environment.
+- Make sure `openpi/scripts/run_pi05_libero_plus_eval.sh` can start the policy server and LIBERO-Plus evaluator in the same environment.
 
-Run FabriX-MAE in independent mode:
+Run FabriMAE in independent mode:
 
 ```bash
 cd "${REPO_ROOT}/openpi"
@@ -238,7 +238,7 @@ bash scripts/run_pi05_libero_plus_eval.sh
 
 Independent mode samples `TTS_NUM_CANDIDATES` complete action chunks from the same observation and selects the candidate using the configured score.
 
-Run FabriX-MAE in branch mode:
+Run FabriMAE in branch mode:
 
 ```bash
 cd "${REPO_ROOT}/openpi"
@@ -261,7 +261,7 @@ SAVE_ATTENTION_METRICS=0 \
 bash scripts/run_pi05_libero_plus_eval.sh
 ```
 
-Branch mode shares the early ODE denoising steps, branches into `TTS_NUM_CANDIDATES` candidates at `TTS_BRANCH_RATIO`, adds noise controlled by `TTS_BRANCH_NOISE_SCALE`, and selects one candidate with the configured MAE/MAC score. In our completed LIBERO-plus fine-grid sweep, the best branch setting was `TTS_BRANCH_RATIO=0.7` and `TTS_BRANCH_NOISE_SCALE=0.15`.
+Branch mode shares the early refinement prefix, branches into `TTS_NUM_CANDIDATES` candidates at `TTS_BRANCH_RATIO`, adds Gaussian noise controlled by `TTS_BRANCH_NOISE_SCALE`, and selects one candidate with the candidate-level MAE-C score. In our completed LIBERO-Plus fine-grid sweep, the best branch setting was `TTS_BRANCH_RATIO=0.7` and `TTS_BRANCH_NOISE_SCALE=0.15`.
 
 Results are written under:
 
@@ -271,16 +271,16 @@ ${OUT_ROOT}/pi05_libero/<suite>/<perturbation>/tasks_0_<N-1>_seed<SEED>/
 
 Each result directory contains `summary.json`, `episodes.csv`, `gpu_usage.csv`, and `policy_server.log`.
 
-## LIBERO-Reflect Perturbation Configuration
+## LIBERO-Reflect Challenging-Side Configuration
 
-LIBERO-Reflect evaluation configuration files are located at:
+LIBERO-Reflect challenging-side evaluation configuration files are located at:
 
 ```text
 third_party/LIBERO-REFLECT/model_configs/evaluation_config_swap.yaml
 third_party/LIBERO-REFLECT/reflect/generated_configs/eval_config_<suite>_<pert>.yaml
 ```
 
-Use a specific configuration with:
+Use a specific challenging-side configuration with:
 
 ```bash
 export EVALUATION_CONFIG_PATH="third_party/LIBERO-REFLECT/reflect/generated_configs/<config>.yaml"
@@ -307,7 +307,7 @@ This framework builds on the following open-source projects:
 
 - [LIBERO](https://github.com/Lifelong-Robot-Learning/LIBERO): lifelong robot learning benchmark
 - [LIBERO-PRO](https://github.com/Zxy-MLlab/LIBERO-PRO): LIBERO evaluation extension with OOD perturbations
-- [LIBERO-PLUS](https://github.com/sylvestf/LIBERO-plus): LIBERO evaluation extension with different perturbations
+- [LIBERO-Plus](https://github.com/sylvestf/LIBERO-plus): LIBERO evaluation extension with different perturbations
 - [OpenVLA](https://github.com/openvla/openvla): vision-language-action policy
 - [OpenVLA-OFT](https://github.com/moojink/openvla-oft): optimized fine-tuning and inference for OpenVLA
 - [starVLA](https://github.com/starVLA/starVLA): QwenPI-Flow policy implementation
