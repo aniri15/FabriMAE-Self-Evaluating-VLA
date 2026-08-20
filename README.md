@@ -1,4 +1,4 @@
-# Markov Attention Entropy: Self-Evaluation Framework for VLA
+# FabriMAE I Trust Myself? Self-Evaluating VLA Action Generation with Markov Attention Entropy
 
 This repository implements Markov Attention Entropy (MAE), a white-box self-evaluation framework across heterogeneous VLAs, and evaluates it on LIBERO-Reflect. Benchmark assets are kept in a separate checkout and linked through `third_party/LIBERO-REFLECT`. Evaluation scripts use `third_party/libero_env.sh` to switch between standard (`libero`) and perturbed (`libero_reflect`) rollouts.
 
