@@ -108,7 +108,7 @@ The launch scripts determine the repository root automatically. `REPO_ROOT` is u
 
 | Model | Default Environment |
 | --- | --- |
-| OpenVLA | OpenVLA](https://github.com/openvla/openvla) |
+| OpenVLA | [OpenVLA](https://github.com/openvla/openvla) |
 | OpenVLA-OFT | [OpenVLA-OFT](https://github.com/moojink/openvla-oft) |
 | QwenPI-Flow policy server | [starVLA](https://github.com/starVLA/starVLA) |
 | QwenPI-Flow LIBERO client | LIBERO evaluation environment |
