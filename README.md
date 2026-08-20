@@ -1,7 +1,7 @@
 # FabriMAE I Trust Myself? Self-Evaluating VLA Action Generation with Markov Attention Entropy
 
 <p align="center">
-  <a href="https://github.com/aniri15/FabriMAE-Self-Evaluating-VLA"><img alt="GitHub" src="https://img.shields.io/badge/GitHub-FabriMAE-Self-Evaluating-VLA-181717?logo=github"></a>
+  <a href="https://github.com/aniri15/FabriMAE-Self-Evaluating-VLA"><img alt="GitHub" src="https://img.shields.io/badge/GitHub-FabriMAE-181717?logo=github"></a>
   <a href="https://arxiv.org/abs/2608.16697"><img alt="arXiv" src="https://img.shields.io/badge/arXiv-2608.05131-b31b1b?logo=arxiv&logoColor=white"></a>
   <a href="./LICENSE"><img alt="License" src="https://img.shields.io/badge/License-Apache--2.0-green"></a>
 </p>
