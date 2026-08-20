@@ -71,7 +71,7 @@ The launch scripts determine the repository root automatically. `REPO_ROOT` is u
 | OpenVLA-OFT | `openvla` |
 | QwenPI-Flow policy server | `starVLA` |
 | QwenPI-Flow LIBERO client | LIBERO evaluation environment |
-| PI0.5 | `openpi` |
+| PI-0.5 | `openpi` |
 
 ## Run Evaluations
 
@@ -111,7 +111,7 @@ Optional controls: `NUM_TRIALS_PER_TASK`, `CONSISTENCY_REPEATS`, `ACTION_NOISE_S
 
 Results are written as `self_eval_consistency_scores.json` or `online_MAE-D_scores.jsonl` under the evaluation results directory.
 
-### PI0.5 / OpenPI
+### PI0.5
 
 ```bash
 cd "${REPO_ROOT}/openpi"
@@ -163,15 +163,15 @@ python submit_libero_eval.py \
 
 Outputs include `online_MAE-C_scores.jsonl` and `online_action_consistency_scores.jsonl`. Saved attention outputs, when enabled, are stored under `saved_attentions/Pi/`.
 
-### FabriX-MAE on pi0.5
+### FabriX-MAE on PI-0.5
 
-FabriX-MAE is the pi0.5 implementation of our MAE-guided verifier-free test-time action selection. It runs on LIBERO-plus through `openpi/` and samples multiple action candidates at inference time.
+FabriX-MAE is the PI-0.5 implementation of our MAE-guided verifier-free test-time action selection. It runs on LIBERO-plus through `openpi/` and samples multiple action candidates at inference time.
 
-Environment setup should follow the upstream OpenPI pi0.5 instructions and the LIBERO-plus installation instructions. In practice, this means:
+Environment setup should follow the upstream OpenPI PI-0.5 instructions and the LIBERO-plus installation instructions. In practice, this means:
 
-- Install and verify the OpenPI environment for pi0.5 inference.
+- Install and verify the OpenPI environment for PI-0.5 inference.
 - Install LIBERO-plus with its assets, BDDL files, and initialization states.
-- Download the pi0.5 checkpoints into a cache directory visible to OpenPI.
+- Download the PI-0.5 checkpoints into a cache directory visible to OpenPI.
 - Make sure `openpi/scripts/run_pi05_libero_plus_eval.sh` can start the policy server and LIBERO-plus evaluator in the same environment.
 
 Required local layout:
