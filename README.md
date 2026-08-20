@@ -104,9 +104,9 @@ bash third_party/setup_libero_reflect.sh
 export CACHE_ROOT="${REPO_ROOT}/.cache"  # optional
 ```
 
-The launch scripts determine the repository root automatically. `REPO_ROOT` is useful when selecting checkpoints in commands below.
+The commands below follow the default environment setup of each upstream project.
 
-| Model | Upstream Project / Environment Notes |
+| Model | Default Environment Setup |
 | --- | --- |
 | OpenVLA | [OpenVLA](https://github.com/openvla/openvla) |
 | OpenVLA-OFT | [OpenVLA-OFT](https://github.com/moojink/openvla-oft) |
