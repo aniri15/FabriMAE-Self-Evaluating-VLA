@@ -1,4 +1,4 @@
-# FabriMAE I Trust Myself? Self-Evaluating VLA Action Generation with Markov Attention Entropy
+# FabriMAE-Self-Evaluating-VLA
 
 <p align="center">
   <a href="https://github.com/aniri15/FabriMAE-Self-Evaluating-VLA"><img alt="GitHub" src="https://img.shields.io/badge/GitHub-FabriMAE-181717?logo=github"></a>
@@ -7,8 +7,42 @@
 </p>
 
 
-This repository implements Markov Attention Entropy (MAE), a white-box self-evaluation framework across heterogeneous VLAs, and evaluates it on LIBERO-Reflect. Benchmark assets are kept in a separate checkout and linked through `third_party/LIBERO-REFLECT`. Evaluation scripts use `third_party/libero_env.sh` to switch between standard (`libero`) and perturbed (`libero_reflect`) rollouts.
+FabriMAE is a white-box self-evaluation and verifier-free test-time action selection framework for Vision-Language-Action models (VLAs). Instead of relying on expert annotations, external verifiers, or output-only uncertainty, FabriMAE converts internal visual attention dynamics during latent action generation into architecture-aware reliability scores.
 
+This repository contains the evaluation code, LIBERO-Reflect data preparation utilities, model-specific MAE scoring implementations, FabriX-MAE test-time selection scripts, and resources for the paper:
+
+**FabriMAE I Trust Myself? Self-Evaluating VLA Action Generation with Markov Attention Entropy**
+
+## Highlights
+
+- Plug-and-play visual attention entropy self-evaluation for heterogeneous VLA architectures.
+- Architecture-aware MAE-D and MAE-C scoring for Latent-Readout and Latent-Refinement action generation.
+- Online scoring from the same policy forward pass used to generate actions.
+- LIBERO-Reflect setup utilities for standard and challenging robotic rollout evaluation.
+- FabriX-MAE verifier-free test-time action selection for PI-family policies.
+- Evaluation scripts for OpenVLA, OpenVLA-OFT, QwenPI-Flow, and PI0.5.
+
+## Released Resources
+
+| Resource | Link |
+| --- | --- |
+| Source code | [FabriMAE GitHub repository](https://github.com/aniri15/FabriMAE-Self-Evaluating-VLA) |
+| LIBERO-Reflect setup | [`third_party/setup_libero_reflect.sh`](third_party/setup_libero_reflect.sh) |
+| OpenVLA evaluation | [`openvla/openvla_run_libero_self_eval.sh`](openvla/openvla_run_libero_self_eval.sh) |
+| OpenVLA-OFT evaluation | [`openvla_oft/openvla_oft_run_libero_self_eval.sh`](openvla_oft/openvla_oft_run_libero_self_eval.sh) |
+| QwenPI-Flow evaluation | [`starVLA/examples/LIBERO/eval_files/eval_libero.py`](starVLA/examples/LIBERO/eval_files/eval_libero.py) |
+| PI0.5 evaluation | [`openpi/scripts/run_pi05_libero_plus_eval.sh`](openpi/scripts/run_pi05_libero_plus_eval.sh) |
+| Batch submission helper | [`starVLA/submit_libero_eval.py`](starVLA/submit_libero_eval.py) |
+
+## Overview
+
+During evaluation, MAE obtains attention from the policy forward pass, measures visual entropy over latent action generation, and converts that signal into reliability-oriented episode scores. MAE-D is used for Latent-Readout VLAs such as OpenVLA and OpenVLA-OFT, where reliable executions concentrate visual addressing. MAE-C is used for Latent-Refinement VLAs such as QwenPI-Flow and PI0.5, where reliable executions retain stronger visual exploration during refinement.
+
+FabriX-MAE further uses the MAE signal for verifier-free test-time action selection by sampling multiple candidate action chunks and selecting the candidate with the strongest reliability score. Benchmark assets are kept in a separate checkout and linked through `third_party/LIBERO-REFLECT`; evaluation scripts use `third_party/libero_env.sh` to switch between the standard side (`libero`) and the challenging side (`libero_reflect`) of LIBERO-Reflect.
+
+<p align="center">
+  <img src="figs/teaser.png" alt="FabriMAE method overview" width="95%">
+</p>
 
 ## Repository Layout
 
