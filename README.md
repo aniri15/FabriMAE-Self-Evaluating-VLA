@@ -259,7 +259,7 @@ Branch mode shares the early ODE denoising steps, branches into `TTS_NUM_CANDIDA
 Results are written under:
 
 ```text
-${OUT_ROOT}/pi05_libero/<suite>/<perturbation>/tasks_0_<N-1>_seed0/
+${OUT_ROOT}/pi05_libero/<suite>/<perturbation>/tasks_0_<N-1>_seed<SEED>/
 ```
 
 Each result directory contains `summary.json`, `episodes.csv`, `gpu_usage.csv`, and `policy_server.log`.
