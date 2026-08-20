@@ -106,13 +106,13 @@ export CACHE_ROOT="${REPO_ROOT}/.cache"  # optional
 
 The launch scripts determine the repository root automatically. `REPO_ROOT` is useful when selecting checkpoints in commands below.
 
-| Model | Default Conda Environment in Scripts |
+| Model | Default Environment |
 | --- | --- |
-| OpenVLA | `openvla-origin` |
-| OpenVLA-OFT | `openvla` |
-| QwenPI-Flow policy server | `starVLA` |
+| OpenVLA | OpenVLA](https://github.com/openvla/openvla) |
+| OpenVLA-OFT | [OpenVLA-OFT](https://github.com/moojink/openvla-oft) |
+| QwenPI-Flow policy server | [starVLA](https://github.com/starVLA/starVLA) |
 | QwenPI-Flow LIBERO client | LIBERO evaluation environment |
-| PI0.5 | `openpi` |
+| PI0.5 | [openpi](https://github.com/Physical-Intelligence/openpi) |
 
 ## Run Evaluations
 
