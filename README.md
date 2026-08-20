@@ -27,7 +27,7 @@ Visual entropy is high when an action state addresses visual patches broadly and
 | MAE Score | Applied To | Reliability Interpretation |
 | --- | --- | --- |
 | **MAE-D** | Latent-Readout VLAs: OpenVLA, OpenVLA-OFT | Reliable executions concentrate visual addressing. |
-| **MAE-C** | Latent-Refinement VLAs: QwenPI-Flow,PI-0.5 | Reliable executions retain stronger visual exploration during refinement. |
+| **MAE-C** | Latent-Refinement VLAs: QwenPI-Flow, PI0.5 | Reliable executions retain stronger visual exploration during refinement. |
 
 For the main results, `Top-1` selects the head with the largest
 reliability-oriented entropy in each layer after the MAE-D or MAE-C
@@ -38,9 +38,9 @@ orientation is applied.
 | OpenVLA | `consistency`, `output_stats`, `mae-d` | MAE-D |
 | OpenVLA-OFT | `mae-d` | MAE-D |
 | QwenPI-Flow | `mae-c` | MAE-C |
-| PI-0.5 | `mae-c` | MAE-C |
+| PI0.5 | `mae-c` | MAE-C |
 
-MAE-D writes `online_MAE-D_scores.jsonl`. MAE-C writes `online_MAE-C_scores.jsonl`. OpenVLA and OpenVLA-OFT do not use MAE-C in self-evaluation configuration; QwenPI-Flow and PI-0.5 use MAE-C for online attention evaluation.
+MAE-D writes `online_MAE-D_scores.jsonl`. MAE-C writes `online_MAE-C_scores.jsonl`. OpenVLA and OpenVLA-OFT do not use MAE-C in self-evaluation configuration; QwenPI-Flow and PI0.5 use MAE-C for online attention evaluation.
 
 ## Setup
 
@@ -71,7 +71,7 @@ The launch scripts determine the repository root automatically. `REPO_ROOT` is u
 | OpenVLA-OFT | `openvla` |
 | QwenPI-Flow policy server | `starVLA` |
 | QwenPI-Flow LIBERO client | LIBERO evaluation environment |
-| PI-0.5 | `openpi` |
+| PI0.5 | `openpi` |
 
 ## Run Evaluations
 
@@ -163,15 +163,15 @@ python submit_libero_eval.py \
 
 Outputs include `online_MAE-C_scores.jsonl` and `online_action_consistency_scores.jsonl`. Saved attention outputs, when enabled, are stored under `saved_attentions/Pi/`.
 
-### FabriX-MAE on PI-0.5
+### FabriX-MAE on PI0.5
 
-FabriX-MAE is the PI-0.5 implementation of our MAE-guided verifier-free test-time action selection. It runs on LIBERO-plus through `openpi/` and samples multiple action candidates at inference time.
+FabriX-MAE is the PI0.5 implementation of our MAE-guided verifier-free test-time action selection. It runs on LIBERO-plus through `openpi/` and samples multiple action candidates at inference time.
 
-Environment setup should follow the upstream OpenPI PI-0.5 instructions and the LIBERO-plus installation instructions. In practice, this means:
+Environment setup should follow the upstream OpenPI PI0.5 instructions and the LIBERO-plus installation instructions. In practice, this means:
 
-- Install and verify the OpenPI environment for PI-0.5 inference.
+- Install and verify the OpenPI environment for PI0.5 inference.
 - Install LIBERO-plus with its assets, BDDL files, and initialization states.
-- Download the PI-0.5 checkpoints into a cache directory visible to OpenPI.
+- Download the PI0.5 checkpoints into a cache directory visible to OpenPI.
 - Make sure `openpi/scripts/run_pi05_libero_plus_eval.sh` can start the policy server and LIBERO-plus evaluator in the same environment.
 
 Run FabriX-MAE in independent mode:
