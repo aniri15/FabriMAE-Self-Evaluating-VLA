@@ -278,3 +278,17 @@ This framework builds on the following open-source projects:
 - [OpenVLA-OFT](https://github.com/moojink/openvla-oft): optimized fine-tuning and inference for OpenVLA
 - [starVLA](https://github.com/starVLA/starVLA): QwenPI-Flow policy implementation
 - [openpi](https://github.com/Physical-Intelligence/openpi): PI implementation
+
+## Citation
+
+```bibtex
+@misc{aniri2026fabrimaeitrustmyself,
+      title={FabriMAE I Trust Myself? Self-Evaluating VLA Action Generation with Markov Attention Entropy}, 
+      author={Aniri and Chen Yilin and Jinhe Bi and Junfei Guo and Donglai Ran and Xu Bian and Zengjie Jin and Yujun Wang and Yijun Tian and Volker Tresp and Fei Shen and Tat-Seng Chua and Yunpu Ma},
+      year={2026},
+      eprint={2608.16697},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI},
+      url={https://arxiv.org/abs/2608.16697}, 
+}
+```
