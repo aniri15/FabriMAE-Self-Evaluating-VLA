@@ -174,61 +174,20 @@ Environment setup should follow the upstream OpenPI PI-0.5 instructions and the 
 - Download the PI-0.5 checkpoints into a cache directory visible to OpenPI.
 - Make sure `openpi/scripts/run_pi05_libero_plus_eval.sh` can start the policy server and LIBERO-plus evaluator in the same environment.
 
-Required local layout:
-
-```text
-.
-├── openpi/
-└── <project>_link/
-    ├── hf-cache/
-    ├── libero/LIBERO-plus/
-    └── openpi_storage/
-```
-
-The OpenPI scripts infer the repository root and the `*_link` directory automatically. If your layout is different, set:
-
-```bash
-export LINK_ROOT="<path_to_link_root>"
-export LIBERO_ROOT="${LINK_ROOT}/libero/LIBERO-plus"
-export HF_CACHE_ROOT="${LINK_ROOT}/hf-cache"
-export STORAGE_ROOT="${LINK_ROOT}/openpi_storage"
-```
-
-Common setup:
+Run FabriX-MAE in independent mode:
 
 ```bash
 cd "${REPO_ROOT}/openpi"
 
-export LINK_ROOT="${LINK_ROOT:-$(find "${REPO_ROOT}" -maxdepth 1 -type d -name '*_link' -print -quit)}"
-export STORAGE_ROOT="${STORAGE_ROOT:-${LINK_ROOT}/openpi_storage}"
-export LIBERO_ROOT="${LIBERO_ROOT:-${LINK_ROOT}/libero/LIBERO-plus}"
-export HF_CACHE_ROOT="${HF_CACHE_ROOT:-${LINK_ROOT}/hf-cache}"
-
-export MODEL_NAME=pi05_libero
-export SUITE=libero_spatial
-export PERTURBATION=camera
-export TASK_START=0
-export NUM_TASKS=10
-export EPISODES_PER_TASK=1
-export SEED=7
-export TTS_NUM_CANDIDATES=10
-export SAVE_ATTENTION_METRICS=0
-```
-
-If `MAX_STEPS` is not set, `run_pi05_libero_plus_eval.sh` uses ACoT-style per-suite limits:
-
-| Suite | Default max steps |
-| --- | ---: |
-| `libero_spatial` | 660 |
-| `libero_object` | 840 |
-| `libero_goal` | 900 |
-| `libero_10` | 1560 |
-
-Run FabriX-MAE in independent mode:
-
-```bash
-export OUT_ROOT="${STORAGE_ROOT}/data/libero_plus_eval_fabrix_mae_independent"
-
+MODEL_NAME=pi05_libero \
+SUITE=libero_spatial \
+PERTURBATION=camera \
+TASK_START=0 \
+NUM_TASKS=10 \
+EPISODES_PER_TASK=1 \
+SEED=7 \
+TTS_NUM_CANDIDATES=10 \
+SAVE_ATTENTION_METRICS=0 \
 TTS_MODE=independent \
 TTS_SCORE_MODE=mae \
 ATTENTION_EVAL_MODE=mac \
@@ -241,8 +200,15 @@ Independent mode samples `TTS_NUM_CANDIDATES` complete action chunks from the sa
 Run FabriX-MAE in branch mode:
 
 ```bash
-export OUT_ROOT="${STORAGE_ROOT}/data/libero_plus_eval_fabrix_mae_branch"
+cd "${REPO_ROOT}/openpi"
 
+MODEL_NAME=pi05_libero \
+SUITE=libero_spatial \
+PERTURBATION=camera \
+TASK_START=0 \
+NUM_TASKS=10 \
+EPISODES_PER_TASK=1 \
+SEED=7 \
 TTS_MODE=branch \
 TTS_SCORE_MODE=mae \
 ATTENTION_EVAL_MODE=mac \
