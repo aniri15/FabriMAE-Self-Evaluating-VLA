@@ -253,6 +253,8 @@ From the repository root:
 bash openvla/openvla_run_libero_self_eval.sh libero libero_spatial output_stats
 bash openvla/openvla_run_libero_self_eval.sh libero_reflect libero_spatial mae-d
 bash openvla_oft/openvla_oft_run_libero_self_eval.sh libero libero_spatial mae-d
+MODEL_NAME=pi05_libero bash openpi/scripts/run_pi05_libero_plus_eval.sh libero_plus libero_spatial mae-c
+MODEL_NAME=pi05_libero SUITE=libero_spatial PERTURBATION=camera TTS_MODE=branch TTS_SCORE_MODE=mae ATTENTION_EVAL_MODE=mac ATTENTION_EVAL_RATIOS=0.01 TTS_NUM_CANDIDATES=10 TTS_BRANCH_RATIO=0.7 TTS_BRANCH_NOISE_SCALE=0.15 SAVE_ATTENTION_METRICS=0 bash openpi/scripts/run_pi05_libero_plus_eval.sh
 ```
 
 For QwenPI-Flow, start `starVLA/examples/LIBERO/eval_files/run_policy_server.sh` and
